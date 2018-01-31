@@ -49,8 +49,24 @@ ipaddr() {
 
 server() {
     if ! [ -z $(php -r \phpinfo\(\)\; | grep 'PHP Version') ]; then
-        echo "PHP ist nicht installiert."
-        return 1
+        echo -e "\e[1mPHP\e[21m ist nicht installiert."
+        if [ -z $(which apt) ]; then
+            return 1
+        fi
+
+        if [[ ${SHELL##*/} == "zsh" ]]; then
+            read "REPLY?Soll PHP installiert werden (y/n)? "
+        else
+            read -p "Soll PHP installiert werden (y/n)? " -n 1 -r
+        fi
+        
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Abbruch"
+            return 1
+        fi
+
+        echo
+        sudo apt update && sudo apt install php
     fi
 
     local PORT="${2:-4000}"
@@ -60,6 +76,26 @@ server() {
 }
 
 gz() {
+    if [ -z $(command -v bc) ]; then 
+        echo -e "\e[1mbc\e[21m ist nicht installiert."
+        if [ -z $(which apt) ]; then
+            return 1
+        fi
+
+        if [[ ${SHELL##*/} == "zsh" ]]; then
+            read "REPLY?Soll bc installiert werden (y/n)? "
+        else
+            read -p "Soll bc installiert werden (y/n)? " -n 1 -r
+        fi
+        
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Abbruch"
+            return 1
+        fi
+
+        sudo apt update && sudo apt install bc
+    fi
+
     local ORIG=$(wc -c < "$1")
 	local COMP=$(gzip -c "$1" | wc -c)
 	local RATIO=$(echo "$COMP * 100 / $ORIG" | bc -l)
