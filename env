@@ -1,8 +1,14 @@
 #!/bin/bash
 
+export TERM="xterm-256color"
+
 if [ -d "$HOME/.cargo" ]; then
-  source $HOME/.cargo/env
+    source $HOME/.cargo/env
 fi
 
-export TERM="xterm-256color"
-export EDITOR="code"
+if [ -z $(which code) ]; then
+    export EDITOR="nano"
+else
+    export EDITOR="code"
+fi
+
