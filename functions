@@ -1,0 +1,114 @@
+#!/bin/bash
+
+mkd() {
+    mkdir -pv "$@" && cd "$_"
+}
+
+bak() {
+    if [ -f $1 ]; then
+        echo "Benutzung: bak <Pfad>"
+        return 1
+    fi
+
+    cp $1 $1.bak
+}
+
+extract () {
+    if [ -f $1 ]; then
+        echo "Benutzung: extract <Archiv>"
+        return 1
+    fi
+    
+    case $1 in
+        *.tar.bz2)  tar xjf $1     ;;
+        *.tar.gz)   tar xzf $1     ;;
+        *.bz2)      bunzip2 $1     ;;
+        *.rar)      unrar e $1     ;;
+        *.gz)       gunzip $1      ;;
+        *.tar)      tar xf $1      ;;
+        *.tbz2)     tar xjf $1     ;;
+        *.tgz)      tar xzf $1     ;;
+        *.zip)      unzip $1       ;;
+        *.Z)        uncompress $1  ;;
+        *.7z)       7z x $1        ;;
+        *)          echo -e "\e[1m$1\e[21m konnt nicht extrahiert werden." ;;
+    esac
+}
+
+dataurl() {
+    local MIMETYPE=$(file -b --mime-type "$1")
+    if [[ $MIMETYPE == text/* ]]; then
+        MIMETYPE="${MIMETYPE};charset=utf-8"
+    fi
+    echo "data:${MIMETYPE};base64,$(openssl base64 -in "$1" | tr -d '\n')"
+}
+
+ipaddr() {
+    echo $(ip addr show $(ip route | grep '^default' | awk '{print $5}') | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+}
+
+server() {
+    if ! [ -z $(php -r \phpinfo\(\)\; | grep 'PHP Version') ]; then
+        echo "PHP ist nicht installiert."
+        return 1
+    fi
+
+    local PORT="${2:-4000}"
+    local IP=$(ipaddr)
+	sleep 1 && xdg-open "http://${IP}:${PORT}/" &
+	php -S "${IP}:${PORT}" -t "${1-.}"
+}
+
+gz() {
+    local ORIG=$(wc -c < "$1")
+	local COMP=$(gzip -c "$1" | wc -c)
+	local RATIO=$(echo "$COMP * 100 / $ORIG" | bc -l)
+	printf "\e[1mOriginal:\e[21m %d bytes\n" "$ORIG"
+	printf "    \e[1mGZIP:\e[21m %d bytes (%2.2f%%)\n" "$COMP" "$RATIO"
+}
+
+digga() {
+    if [ $# -lt 1 ]; then
+        echo -e "\e[91mFEHLER:\e[0m Keine Domain angegeben!\nBenutzung: digga <FQDN>"
+        return 1
+    fi
+
+    if ! [ -z $(echo "$1" | grep -P '(?=^.{1,254}$)(^(?>(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)') ]; then
+        dig +nocmd "$1" any +multiline +noall +answer
+    else
+        echo -e "\e[91mFEHLER:\e[0m \e[1m$1\e[21m ist kein FQDN"
+        return 1
+    fi
+}
+
+certest() {
+	if [ $# -lt 1 ]; then
+		echo -e "\e[91mFEHLER:\e[0m Keine Domain angegeben!\nBenutzung: certest <FQDN>"
+		return 1
+	fi
+
+	local DOMAIN="$1";
+    if [ -z $(echo "$DOMAIN" | grep -P '(?=^.{1,254}$)(^(?>(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)') ]; then
+        echo -e "\e[91mFEHLER:\e[0m \e[1m$DOMAIN\e[21m ist kein FQDN"
+        return 1
+    fi
+
+	echo -e "Prüfe \e[94m$DOMAIN\e[0m…\n";
+
+	local TMP=$(echo -e "GET / HTTP/1.0\nEOT" \
+		| openssl s_client -connect "$DOMAIN:443" -servername "$DOMAIN" 2>&1);
+
+	if [[ "$TMP" = *"-----BEGIN CERTIFICATE-----"* ]]; then
+		local CERT=$(echo "$TMP" \
+			| openssl x509 -text -certopt "no_aux, no_header, no_issuer, no_pubkey, \
+			no_serial, no_sigdump, no_signame, no_validity, no_version");
+		echo -e "Common Name:\n";
+		echo "$CERT" | grep "Subject:" | sed -e "s/^.*CN=//" | sed -e "s/\/emailAddress=.*//";
+		echo "";
+		echo -e "Subject Alternative Name(s):\n";
+		echo "$CERT" | grep -A 1 "Subject Alternative Name:" \
+			| sed -e "2s/DNS://g" -e "s/ //g" | tr "," "\n" | tail -n +2;
+	else
+		echo -e "Es konnte kein Zertifikat ermittelt werden.";
+	fi;
+}

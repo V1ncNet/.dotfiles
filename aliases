@@ -1,0 +1,52 @@
+#!/bin/bash
+
+PWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Reload #
+case "${SHELL##*/}" in
+    "bash")
+        alias reload="source $HOME/.bashrc"
+        ;;
+    "zsh")
+        alias reload="source $HOME/.zshrc"
+        ;;
+    *)
+        echo -e "Warnung: Alias \e[1mreload\e[0m konnte nicht gesetzt werden!\nVerwendete Shell: \e[94m$0\e[39m"
+        ;;
+esac
+
+# Dotfiles bearbeiten #
+if [ $(alias | grep reload | wc -l) != 0 -a -z "$EDITOR" ]; then
+    alias ea="$EDITOR $PWD/aliases && reload"
+    alias ee="$EDITOR $PWD/env && reload"
+    alias ef="$EDITOR $PWD/functions && reload"
+fi
+
+
+alias update="sudo apt update && sudo apt full-upgrade -y && sudo apt upgrade -y && sudo apt autoremove --purge -y"
+alias path="echo -e ${PATH//:/\\n}"
+alias mkdir="mkdir -pv"
+alias cpProgress="rsync --progress -ravz"
+alias gping="ping 8.8.8.8"
+alias df="df -H"
+alias du="du -ch"
+alias rsync="rsync --progress"
+
+alias ls="ls -G"
+alias ll="ls -lG"
+alias l="ls -lAhG"
+alias lsd="ls -Gal | grep ^d"
+
+# Navigation #
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+
+# Wichtige Verzeichnisse #
+if [ -d $HOME/dev ]; then
+    alias dev="cd $HOME/dev"
+fi
+if [ -d $HOME/Dropbox ]; then
+    alias d="cd $HOME/Dropbox"
+fi

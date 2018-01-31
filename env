@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ -d "$HOME/.cargo" ]; then
+  source $HOME/.cargo/env
+fi
+
+export TERM="xterm-256color"
+export EDITOR="code"
