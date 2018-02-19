@@ -13,7 +13,11 @@ bak() {
     cp $1 $1.bak
 }
 
-extract () {
+md5() {
+    find $1 -type f -exec md5sum {} \;>> $1.md5;
+}
+
+extract() {
     if ! [ -f $1 ]; then
         echo "Benutzung: extract <Archiv>"
         return 1
