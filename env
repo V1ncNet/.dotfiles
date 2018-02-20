@@ -6,7 +6,7 @@ if [ -d "$HOME/.cargo" ]; then
     source $HOME/.cargo/env
 fi
 
-if [ -z $(which code) ]; then
+if [ -z $(command -v code) ]; then
     export EDITOR="nano"
 else
     export EDITOR="code"
