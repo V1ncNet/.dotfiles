@@ -1,7 +1,5 @@
 #!/bin/bash
 
-PWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 # Reload #
 case "${SHELL##*/}" in
     "bash")
@@ -16,7 +14,7 @@ case "${SHELL##*/}" in
 esac
 
 # Dotfiles bearbeiten #
-if [ $(alias | grep reload | wc -l) != 0 -a -z "$EDITOR" ]; then
+if [ $(alias | grep reload | wc -l) != 0 ] && [ "$EDITOR" != "" ] && [ "$DOTFILES" != "" ]; then
     alias ea="$EDITOR $PWD/aliases && reload"
     alias ee="$EDITOR $PWD/env && reload"
     alias ef="$EDITOR $PWD/functions && reload"
