@@ -15,9 +15,9 @@ esac
 
 # Dotfiles bearbeiten #
 if [ $(alias | grep reload | wc -l) != 0 ] && [ "$EDITOR" != "" ] && [ "$DOTFILES" != "" ]; then
-    alias ea="$EDITOR $PWD/aliases && reload"
-    alias ee="$EDITOR $PWD/env && reload"
-    alias ef="$EDITOR $PWD/functions && reload"
+    alias ea="$EDITOR $DOTFILES/aliases && reload"
+    alias ee="$EDITOR $DOTFILES/env && reload"
+    alias ef="$EDITOR $DOTFILES/functions && reload"
 fi
 
 
