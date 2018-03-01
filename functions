@@ -51,6 +51,13 @@ ipaddr() {
     echo $(ip addr show $(ip route | grep '^default' | awk '{print $5}') | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
 }
 
+pubaddr() {
+    echo "$(curl -s -m 60 http://ipecho.net/plain)"
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+}
+
 serve() {
     if ! [ -z $(php -r \phpinfo\(\)\; | grep 'PHP Version') ]; then
         echo -e "\e[1mPHP\e[21m ist nicht installiert."
