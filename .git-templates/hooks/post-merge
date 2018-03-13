@@ -8,3 +8,4 @@ check_run() {
 
 check_run yarn.lock "yarn install"
 check_run package-lock.json "npm install && npm prune"
+check_run pom.xml "mvn clean install -U -Dmaven.test.skip=true"
