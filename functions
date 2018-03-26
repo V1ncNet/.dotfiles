@@ -89,7 +89,7 @@ serve() {
 
 gz() {
     if [ -d $1 ]; then
-        echo "$1 darf keine Datei sein."
+        echo "$1 darf kein Ordner sein."
         return 1
     fi 
     if ! [ -f $1 ]; then
